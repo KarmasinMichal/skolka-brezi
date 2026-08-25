@@ -293,11 +293,11 @@
           }
 
           root.innerHTML = albums.map(function (a) {
-            var prefix = a.folder ? 'images/' + a.folder + '/' : 'images/';
+            var prefix = a.folder ? 'images/' + encodeURIComponent(a.folder) + '/' : 'images/';
             var heading = a.folder ? '<h2 class="album-title">' + titleFromName(a.folder) + '</h2>' : '';
             var cards = a.files.map(function (name) {
               var title = titleFromName(name);
-              return '<div class="gallery-card gallery-photo"><img src="' + prefix + name + '" alt="' + title + '" loading="lazy"></div>';
+              return '<div class="gallery-card gallery-photo"><img src="' + prefix + encodeURIComponent(name) + '" alt="' + title + '" loading="lazy"></div>';
             }).join('');
             return '<div class="gallery-album">' + heading + '<div class="gallery-grid">' + cards + '</div></div>';
           }).join('');

@@ -1,24 +1,35 @@
-JAK PŘIDAT FOTKY DO GALERIE
-============================
+JAK PŘIDAT FOTKY DO GALERIE (ALBA PODLE SLOŽEK)
+==================================================
+
+Fotky se na webu seskupují do alb podle složek — stejně jako teď
+na msbrezi.cz. Název složky se použije jako nadpis alba na webu
+(pomlčky/podtržítka se změní na mezery, první písmeno se zvětší).
 
 Pokud webhosting podporuje PHP (běžné u většiny webhostingů, i toho
 předchozího na msbrezi.cz):
 
-1. Stačí nahrát obrázek (jpg/png/webp/gif) do složky fotogalerie/images/
-   (přes FTP nebo správce souborů webhostingu).
-2. Nic dalšího dělat nemusíš — soubor list.php v téže složce fotky
-   automaticky najde a zobrazí se na stránce Fotogalerie.
+1. Ve fotogalerie/images/ vytvoř složku pojmenovanou podle akce,
+   např. fotogalerie/images/vylet-do-lesa/
+2. Nahraj fotky (jpg/png/webp/gif) do téhle složky.
+3. Nic dalšího dělat nemusíš — soubor list.php automaticky najde
+   všechny složky i fotky a zobrazí je na stránce Fotogalerie,
+   složka "vylet-do-lesa" se zobrazí jako album "Vylet do lesa".
 
-Pokud PHP hosting nepoužíváš (např. jen čistě statický hosting nebo
-GitHub Pages, kde PHP neběží), web automaticky přepne na ruční seznam:
+Fotky nahrané přímo do fotogalerie/images/ (mimo složku) se zobrazí
+jako fotky bez názvu alba, nahoře.
 
-1. Nahraj obrázek do fotogalerie/images/.
-2. Otevři fotogalerie/images/manifest.json a přidej název souboru
-   do seznamu, např. při nahrání vylet-2026.jpg:
+Pokud PHP hosting nepoužíváš (např. čistě statický hosting nebo
+GitHub Pages, kde PHP neběží), web automaticky přepne na ruční seznam
+v souboru fotogalerie/images/manifest.json. Formát:
 
-   ["vylet-2026.jpg", "oslava-2026.jpg"]
+{
+  "vylet-do-lesa": ["foto1.jpg", "foto2.jpg"],
+  "oslava-mikulase": ["foto1.jpg"]
+}
 
-3. Ulož soubor. Fotka se zobrazí na stránce Fotogalerie.
+Klíč (název před dvojtečkou) = název alba/složky, hodnota = seznam
+názvů souborů v ní. Fotky ulož do stejné složky (fotogalerie/images/
+vylet-do-lesa/), do manifest.json se jen zapisují jejich názvy.
 
 (list.php má vždy přednost — manifest.json se použije jen když
 list.php není k dispozici nebo neběží.)

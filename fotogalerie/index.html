@@ -251,8 +251,16 @@
   <script>
     (function () {
       var grid = document.getElementById('gallery-grid');
-      fetch('images/manifest.json', { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : []; })
+      function fetchJson(url) {
+        return fetch(url, { cache: 'no-store' }).then(function (r) {
+          return r.ok ? r.json() : Promise.reject();
+        });
+      }
+      // list.php scans the images/ folder automatically (works on PHP hosting).
+      // manifest.json is a manually-edited fallback (works on plain static hosting, e.g. GitHub Pages).
+      fetchJson('images/list.php')
+        .catch(function () { return fetchJson('images/manifest.json'); })
+        .catch(function () { return []; })
         .then(function (files) {
           var imgs = (Array.isArray(files) ? files : []).filter(function (name) {
             return /\.(jpe?g|png|webp|gif)$/i.test(name);
@@ -264,9 +272,6 @@
           grid.innerHTML = imgs.map(function (name) {
             return '<div class="gallery-card gallery-photo"><img src="images/' + name + '" alt="' + name + '" loading="lazy"></div>';
           }).join('');
-        })
-        .catch(function () {
-          grid.innerHTML = '<div class="gallery-card">Fotky se teď nepodařilo načíst.</div>';
         });
     })();
   </script>

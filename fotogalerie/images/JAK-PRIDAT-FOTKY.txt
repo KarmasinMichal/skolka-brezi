@@ -1,15 +1,24 @@
 JAK PŘIDAT FOTKY DO GALERIE
 ============================
 
-1. Nahraj obrázek (jpg/png/webp/gif) do složky fotogalerie/images/
-   (přes FTP nebo správce souborů webhostingu).
+Pokud webhosting podporuje PHP (běžné u většiny webhostingů, i toho
+předchozího na msbrezi.cz):
 
-2. Otevři soubor fotogalerie/images/manifest.json a přidej název
-   souboru do seznamu. Např. pokud jsi nahrál(a) vylet-2026.jpg,
-   manifest.json bude vypadat takto:
+1. Stačí nahrát obrázek (jpg/png/webp/gif) do složky fotogalerie/images/
+   (přes FTP nebo správce souborů webhostingu).
+2. Nic dalšího dělat nemusíš — soubor list.php v téže složce fotky
+   automaticky najde a zobrazí se na stránce Fotogalerie.
+
+Pokud PHP hosting nepoužíváš (např. jen čistě statický hosting nebo
+GitHub Pages, kde PHP neběží), web automaticky přepne na ruční seznam:
+
+1. Nahraj obrázek do fotogalerie/images/.
+2. Otevři fotogalerie/images/manifest.json a přidej název souboru
+   do seznamu, např. při nahrání vylet-2026.jpg:
 
    ["vylet-2026.jpg", "oslava-2026.jpg"]
 
-3. Ulož soubor. Fotka se hned zobrazí na stránce Fotogalerie.
+3. Ulož soubor. Fotka se zobrazí na stránce Fotogalerie.
 
-Pořadí fotek v manifest.json = pořadí zobrazení na webu.
+(list.php má vždy přednost — manifest.json se použije jen když
+list.php není k dispozici nebo neběží.)

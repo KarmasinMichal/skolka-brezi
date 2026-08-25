@@ -204,11 +204,8 @@
   .gallery-card{aspect-ratio:4/3; border-radius:16px; background:var(--sage); border:1px solid rgba(43,42,40,.1); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:.85rem; overflow:hidden; text-align:center; padding:12px;}
   .gallery-card.gallery-photo{padding:0; position:relative;}
   .gallery-card.gallery-photo img{width:100%; height:100%; object-fit:cover; display:block;}
-  .gallery-caption{
-    position:absolute; left:0; right:0; bottom:0; padding:10px 12px 8px;
-    background:linear-gradient(to top, rgba(20,20,18,.72), rgba(20,20,18,0));
-    color:#fff; font-size:.85rem; font-weight:600; text-align:left;
-  }
+  .gallery-album + .gallery-album{margin-top:48px;}
+  .album-title{font-size:1.3rem; margin-bottom:18px;}
   @media (max-width:880px){ .gallery-grid{grid-template-columns:1fr 1fr;} }
 
 
@@ -248,42 +245,61 @@
   </section>
   <section style="padding-top:20px;">
     <div class="wrap">
-      <div class="gallery-grid" id="gallery-grid">
-        <div class="gallery-card">Načítám fotky…</div>
+      <div id="gallery-albums">
+        <div class="gallery-grid"><div class="gallery-card">Načítám fotky…</div></div>
       </div>
     </div>
   </section>
   <script>
     (function () {
-      var grid = document.getElementById('gallery-grid');
+      var root = document.getElementById('gallery-albums');
       function fetchJson(url) {
         return fetch(url, { cache: 'no-store' }).then(function (r) {
           return r.ok ? r.json() : Promise.reject();
         });
       }
-      // list.php scans the images/ folder automatically (works on PHP hosting).
-      // manifest.json is a manually-edited fallback (works on plain static hosting, e.g. GitHub Pages).
+      function titleFromName(name) {
+        var base = name.replace(/\.[^.]+$/, '');        // drop extension (files only)
+        var words = base.replace(/[-_]+/g, ' ').trim();  // dashes/underscores -> spaces
+        if (!words) return '';
+        return words.charAt(0).toUpperCase() + words.slice(1);
+      }
+      // list.php scans images/ (each subfolder = one named album) automatically on PHP hosting.
+      // manifest.json is a manually-edited fallback for plain static hosting (e.g. GitHub Pages):
+      // { "nazev-slozky": ["foto1.jpg", "foto2.jpg"], ... }
       fetchJson('images/list.php')
         .catch(function () { return fetchJson('images/manifest.json'); })
-        .catch(function () { return []; })
-        .then(function (files) {
-          var imgs = (Array.isArray(files) ? files : []).filter(function (name) {
-            return /\.(jpe?g|png|webp|gif)$/i.test(name);
+        .catch(function () { return {}; })
+        .then(function (data) {
+          var albums = [];
+          if (Array.isArray(data)) {
+            // flat list fallback (no albums) -> single unnamed album
+            if (data.length) albums.push({ folder: '', files: data });
+          } else if (data && typeof data === 'object') {
+            Object.keys(data).forEach(function (folder) {
+              if (Array.isArray(data[folder]) && data[folder].length) {
+                albums.push({ folder: folder, files: data[folder] });
+              }
+            });
+          }
+          albums.forEach(function (a) {
+            a.files = a.files.filter(function (name) { return /\.(jpe?g|png|webp|gif)$/i.test(name); });
           });
-          if (imgs.length === 0) {
-            grid.innerHTML = '<div class="gallery-card">Zatím tu nejsou žádné fotky.</div>';
+          albums = albums.filter(function (a) { return a.files.length; });
+
+          if (albums.length === 0) {
+            root.innerHTML = '<div class="gallery-grid"><div class="gallery-card">Zatím tu nejsou žádné fotky.</div></div>';
             return;
           }
-          function titleFromFilename(name) {
-            var base = name.replace(/\.[^.]+$/, '');       // drop extension
-            var words = base.replace(/[-_]+/g, ' ').trim();  // dashes/underscores -> spaces
-            if (!words) return '';
-            return words.charAt(0).toUpperCase() + words.slice(1);
-          }
-          grid.innerHTML = imgs.map(function (name) {
-            var title = titleFromFilename(name);
-            var caption = title ? '<div class="gallery-caption">' + title + '</div>' : '';
-            return '<div class="gallery-card gallery-photo"><img src="images/' + name + '" alt="' + title + '" loading="lazy">' + caption + '</div>';
+
+          root.innerHTML = albums.map(function (a) {
+            var prefix = a.folder ? 'images/' + a.folder + '/' : 'images/';
+            var heading = a.folder ? '<h2 class="album-title">' + titleFromName(a.folder) + '</h2>' : '';
+            var cards = a.files.map(function (name) {
+              var title = titleFromName(name);
+              return '<div class="gallery-card gallery-photo"><img src="' + prefix + name + '" alt="' + title + '" loading="lazy"></div>';
+            }).join('');
+            return '<div class="gallery-album">' + heading + '<div class="gallery-grid">' + cards + '</div></div>';
           }).join('');
         });
     })();

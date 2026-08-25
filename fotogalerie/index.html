@@ -201,7 +201,9 @@
   .page-hero{padding:64px 0 20px;}
   .page-hero h1{font-size:clamp(2rem,3.4vw,2.8rem);}
   .gallery-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
-  .gallery-card{aspect-ratio:4/3; border-radius:16px; background:var(--sage); border:1px solid rgba(43,42,40,.1); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:.85rem;}
+  .gallery-card{aspect-ratio:4/3; border-radius:16px; background:var(--sage); border:1px solid rgba(43,42,40,.1); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:.85rem; overflow:hidden; text-align:center; padding:12px;}
+  .gallery-card.gallery-photo{padding:0;}
+  .gallery-card.gallery-photo img{width:100%; height:100%; object-fit:cover; display:block;}
   @media (max-width:880px){ .gallery-grid{grid-template-columns:1fr 1fr;} }
 
 
@@ -237,20 +239,42 @@
       <div class="eyebrow">Fotogalerie</div>
       <h1>Fotky z naší školky</h1>
       <p class="lede">Výlety, oslavy a každodenní život naší školky.</p>
+      <a href="https://github.com/karmasinmichal/skolka-brezi/upload/main/fotogalerie/images" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:22px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 21h16"/></svg>
+        Nahrát fotky
+      </a>
+      <p style="margin-top:10px; font-size:.85rem; color:var(--muted);">Nahrávání je jen pro správce školky (přihlášení na GitHubu).</p>
     </div>
   </section>
   <section style="padding-top:20px;">
     <div class="wrap">
-      <div class="gallery-grid">
-        <div class="gallery-card">fotka bude doplněna</div>
-        <div class="gallery-card">fotka bude doplněna</div>
-        <div class="gallery-card">fotka bude doplněna</div>
-        <div class="gallery-card">fotka bude doplněna</div>
-        <div class="gallery-card">fotka bude doplněna</div>
-        <div class="gallery-card">fotka bude doplněna</div>
+      <div class="gallery-grid" id="gallery-grid">
+        <div class="gallery-card">Načítám fotky…</div>
       </div>
     </div>
   </section>
+  <script>
+    (function () {
+      var grid = document.getElementById('gallery-grid');
+      fetch('https://api.github.com/repos/karmasinmichal/skolka-brezi/contents/fotogalerie/images')
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (files) {
+          var imgs = (Array.isArray(files) ? files : []).filter(function (f) {
+            return f.type === 'file' && /\.(jpe?g|png|webp|gif)$/i.test(f.name);
+          });
+          if (imgs.length === 0) {
+            grid.innerHTML = '<div class="gallery-card">Zatím tu nejsou žádné fotky.</div>';
+            return;
+          }
+          grid.innerHTML = imgs.map(function (f) {
+            return '<div class="gallery-card gallery-photo"><img src="' + f.download_url + '" alt="' + f.name + '" loading="lazy"></div>';
+          }).join('');
+        })
+        .catch(function () {
+          grid.innerHTML = '<div class="gallery-card">Fotky se teď nepodařilo načíst.</div>';
+        });
+    })();
+  </script>
 
 </main>
 
